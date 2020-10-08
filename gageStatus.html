@@ -16,8 +16,11 @@
    }
    table#statusTable thead th {
     text-align:left;
+   }
+   table#statusTable thead th.sortable {
     cursor: pointer;
    }
+   
    table#statusTable tbody tr.operational {
     background-color:#92F060;
    }
@@ -181,31 +184,40 @@
     let header = document.createElement("thead");
     let row = document.createElement("tr");
     let cell = document.createElement("th");
-    cell.textContent = "Status";
+    let sortHouse = document.createElement("b");
+    sortHouse.textContent = "\u21C5";
+    
+    cell.classList.add("sortable");
+    cell.textContent = "Status\u21C5";
+    cell.appendChild(sortHouse);
     cell.addEventListener("click",function(){
      setupSort(json,table,"Status");
     });
     row.appendChild(cell);
     cell = document.createElement("th");
-    cell.textContent = "First Report\u25B2\u2195\u21C5";
+    cell.classList.add("sortable");
+    cell.textContent = "First Report\u21C5";
     cell.addEventListener("click",function(){
      setupSort(json,table,"First Report");
     });
     row.appendChild(cell);
     cell = document.createElement("th");
-    cell.textContent = "ID";
+    cell.classList.add("sortable");
+    cell.textContent = "ID\u21C5";
     cell.addEventListener("click",function(){
      setupSort(json,table,"Location ID");
     });
     row.appendChild(cell);
     cell = document.createElement("th");
-    cell.textContent = "Name";
+    cell.classList.add("sortable");
+    cell.textContent = "Name\u21C5";
     cell.addEventListener("click",function(){
      setupSort(json,table,"Name");
     });
     row.appendChild(cell);
     cell = document.createElement("th");
-    cell.textContent = "WFO";
+    cell.classList.add("sortable");
+    cell.textContent = "WFO\u21C5";
     cell.addEventListener("click",function(){
      setupSort(json,table,"WFO");
     });
