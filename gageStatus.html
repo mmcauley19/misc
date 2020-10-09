@@ -23,11 +23,6 @@
    table#statusTable thead th.sortable {
     cursor: pointer;
    }
-   /*table#statusTable thead th .sorthouse {
-    font-weight:bold;
-    color:lime;
-   } */
-   
    table#statusTable tbody .operational {
     background-color:#92F060;
    }
@@ -40,11 +35,15 @@
   </style>
  </head>
  <body>
-  <table id = "statusTable"></table></p>
+  <div style="float:left;">Click column heading to sort</div>
+  <div style="float:right;">MW = mesowest</div>
+  <br>
+  <table id = "statusTable"></table>
   <script>
    var elmSorted = "";
    var sortType = "";
-	 var json;
+   var json;
+   var useOperational = false;
    function getSortOrderAsc(prop){
     return function(a,b){
      if (prop == "Status"){
@@ -90,9 +89,7 @@
     link.textContent = text;
     link.target = "_blank";
     cell.appendChild(link);
-    //let br = document.createElement("&nbsp");
     let space = document.createTextNode("  ");
-    //cell.appendChild(br);
     cell.appendChild(space);
    }
    
@@ -131,23 +128,26 @@
    function reviseTable(json,table){
     let tbody = table.querySelector("tbody");
     let rows = tbody.querySelectorAll("tr");
-    for (let i=0;i<json.length;i++){
-     rows[i].childNodes[0].textContent = json[i].Status;
-     rows[i].childNodes[0].className = (json[i].Status).toLowerCase();
-     rows[i].childNodes[1].textContent = json[i]["First Report"];
-     rows[i].childNodes[2].textContent = json[i]["Location ID"];
-     rows[i].childNodes[3].textContent = json[i].Name;
-     rows[i].childNodes[4].textContent = json[i].WFO;
-     rows[i].childNodes[5].querySelectorAll("A")[0].href = json[i].mesowestLink;
-     rows[i].childNodes[5].querySelectorAll("A")[0].target = "_blank";
-     //rows[i].childNodes[5].querySelectorAll("A")[0].textContent = json[i]["Location ID"]+"MW";
-     rows[i].childNodes[5].querySelectorAll("A")[0].textContent = "MW";
-     rows[i].childNodes[5].querySelectorAll("A")[1].href = json[i].nwsLink;
-     rows[i].childNodes[5].querySelectorAll("A")[1].target = "_blank";
-     //rows[i].childNodes[5].querySelectorAll("A")[1].textContent = json[i]["Location ID"]+"NWS";
-     rows[i].childNodes[5].querySelectorAll("A")[1].textContent = "NWS";
-     rows[i].childNodes[6].textContent = json[i].Notes;
-     //rows[i].className = (json[i].Status).toLowerCase();
+    //have a seperate counter since if we're leaving out operational, num rows won't equal length of json array
+    for (let i=0,j=0;i<json.length && j<rows.length;i++){
+     if(!useOperational){
+      if(json[i].Status.toLowerCase() == "operational")
+       continue;
+     }
+     rows[j].childNodes[0].textContent = json[i].Status;
+     rows[j].childNodes[0].className = (json[i].Status).toLowerCase();
+     rows[j].childNodes[1].textContent = json[i]["First Report"];
+     rows[j].childNodes[2].textContent = json[i]["Location ID"];
+     rows[j].childNodes[3].textContent = json[i].Name;
+     rows[j].childNodes[4].textContent = json[i].WFO;
+     rows[j].childNodes[5].querySelectorAll("A")[0].href = json[i].mesowestLink;
+     rows[j].childNodes[5].querySelectorAll("A")[0].target = "_blank";
+     rows[j].childNodes[5].querySelectorAll("A")[0].textContent = "MW";
+     rows[j].childNodes[5].querySelectorAll("A")[1].href = json[i].nwsLink;
+     rows[j].childNodes[5].querySelectorAll("A")[1].target = "_blank";
+     rows[j].childNodes[5].querySelectorAll("A")[1].textContent = "NWS";
+     rows[j].childNodes[6].textContent = json[i].Notes;
+     j++;
     }
    }
 
@@ -205,35 +205,36 @@
    function fillTable(json,table){
     for (var i=0;i<json.length;i++){
      let tbody = table.querySelector("tbody");
-	   let row = document.createElement("tr");
-	   let cell = document.createElement("td");
-	   let status = json[i].Status;
-	   cell.textContent = status;
+     let row = document.createElement("tr");
+     let cell = document.createElement("td");
+     let status = json[i].Status;
+     if(!useOperational){
+      if(status.toLowerCase() == "operational")
+       continue;
+     }
+     cell.textContent = status;
      cell.className = (status).toLowerCase();
-	   row.appendChild(cell);
-	   cell = document.createElement("td");
+     row.appendChild(cell);
+     cell = document.createElement("td");
      cell.textContent = json[i]["First Report"];
      row.appendChild(cell);
-	   cell = document.createElement("td");
+     cell = document.createElement("td");
      cell.textContent = json[i]["Location ID"];
-	   row.appendChild(cell);
-	   cell = document.createElement("td");
-	   cell.textContent = json[i].Name;
-	   row.appendChild(cell);
-	   cell = document.createElement("td");
-	   cell.textContent = json[i].WFO;
-	   row.appendChild(cell);
-	   cell = document.createElement("td");
-     //makeLink(json[i].mesowestLink,cell,json[i]["Location ID"]+"MW");
-     //makeLink(json[i].nwsLink,cell,json[i]["Location ID"]+"NWS");
+     row.appendChild(cell);
+     cell = document.createElement("td");
+     cell.textContent = json[i].Name;
+     row.appendChild(cell);
+     cell = document.createElement("td");
+     cell.textContent = json[i].WFO;
+     row.appendChild(cell);
+     cell = document.createElement("td");
      makeLink(json[i].mesowestLink,cell,"MW");
      makeLink(json[i].nwsLink,cell,"NWS");
-	   row.appendChild(cell);
-	   cell = document.createElement("td");
+     row.appendChild(cell);
+     cell = document.createElement("td");
      cell.textContent = json[i].Notes;
      row.appendChild(cell);
-   //  row.className = (status).toLowerCase();
-	   tbody.appendChild(row);
+     tbody.appendChild(row);
     }
    }
 
