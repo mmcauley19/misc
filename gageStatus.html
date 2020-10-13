@@ -141,24 +141,26 @@
      }
      rows[j].childNodes[0].textContent = json[i].Status;
      rows[j].childNodes[0].className = (json[i].Status).toLowerCase();
-     rows[j].childNodes[1].textContent = json[i]["First Report"];
-     rows[j].childNodes[2].textContent = json[i]["Location ID"];
-     rows[j].childNodes[3].textContent = json[i].Name;
-     rows[j].childNodes[4].textContent = json[i].WFO;
-     rows[j].childNodes[5].querySelectorAll("A")[0].href = json[i].mesowestLink;
-     rows[j].childNodes[5].querySelectorAll("A")[0].target = "_blank";
-     rows[j].childNodes[5].querySelectorAll("A")[0].textContent = "MW";
-     rows[j].childNodes[5].querySelectorAll("A")[1].href = json[i].nwsLink;
-     rows[j].childNodes[5].querySelectorAll("A")[1].target = "_blank";
-     rows[j].childNodes[5].querySelectorAll("A")[1].textContent = "NWS";
-     rows[j].childNodes[6].textContent = json[i].Notes;
+     rows[j].childNodes[1].textContent = json[i]["Status as of"];
+     rows[j].childNodes[2].textContent = json[i]["First Report"];
+     rows[j].childNodes[3].textContent = json[i]["Location ID"];
+     rows[j].childNodes[4].textContent = json[i].Name;
+     rows[j].childNodes[5].textContent = json[i].WFO;
+     rows[j].childNodes[6].textContent = json[i].Owner;
+     rows[j].childNodes[7].querySelectorAll("A")[0].href = json[i].mesowestLink;
+     rows[j].childNodes[7].querySelectorAll("A")[0].target = "_blank";
+     rows[j].childNodes[7].querySelectorAll("A")[0].textContent = "MW";
+     rows[j].childNodes[7].querySelectorAll("A")[1].href = json[i].nwsLink;
+     rows[j].childNodes[7].querySelectorAll("A")[1].target = "_blank";
+     rows[j].childNodes[7].querySelectorAll("A")[1].textContent = "NWS";
+     rows[j].childNodes[8].textContent = json[i].Notes;
      if(includeUpdates){
       if (json[i]["Updates"]){
        let moreButton = document.createElement("button"); 
        moreButton.textContent = "More";
        moreButton.className = "more";
        moreButton.addEventListener("click",clickRegisterUpdates(i));
-       rows[j].childNodes[6].appendChild(moreButton);
+       rows[j].childNodes[8].appendChild(moreButton);
       }
      }
      j++;
@@ -200,6 +202,13 @@
     row.appendChild(cell);
     cell = document.createElement("th");
     cell.classList.add("sortable");
+    cell.textContent = "\u21C5  Status as of";
+    cell.addEventListener("click",function(){
+     setupSort(json,table,"Status as of");
+    });
+    row.appendChild(cell);
+    cell = document.createElement("th");
+    cell.classList.add("sortable");
     cell.textContent = "\u21C5  First Report";
     cell.addEventListener("click",function(){
      setupSort(json,table,"First Report");
@@ -224,6 +233,13 @@
     cell.textContent = "\u21C5  WFO";
     cell.addEventListener("click",function(){
      setupSort(json,table,"WFO");
+    });
+    row.appendChild(cell);
+    cell = document.createElement("th");
+    cell.classList.add("sortable");
+    cell.textContent = "\u21C5  Owner";
+    cell.addEventListener("click",function(){
+     setupSort(json,table,"Owner");
     });
     row.appendChild(cell);
     cell = document.createElement("th");
@@ -253,6 +269,9 @@
      cell.className = (status).toLowerCase();
      row.appendChild(cell);
      cell = document.createElement("td");
+     cell.textContent = json[i]["Status as of"];
+     row.appendChild(cell);
+     cell = document.createElement("td");
      cell.textContent = json[i]["First Report"];
      row.appendChild(cell);
      cell = document.createElement("td");
@@ -263,6 +282,9 @@
      row.appendChild(cell);
      cell = document.createElement("td");
      cell.textContent = json[i].WFO;
+     row.appendChild(cell);
+     cell = document.createElement("td");
+     cell.textContent = json[i].Owner;
      row.appendChild(cell);
      cell = document.createElement("td");
      makeLink(json[i].mesowestLink,cell,"MW");
@@ -279,15 +301,6 @@
        cell.appendChild(moreButton); 
       }
      }
-/*
-     if(includeUpdates){
-      if (json[i]["Updates"]){
-       let moreButton = document.createElement("button"); 
-       moreButton.textContent = "More";
-       moreButton.addEventListener("click",clickRegisterUpdates(i));//showUpdate(json[i]["Updates"]));
-       cell.appendChild(moreButton); 
-      }
-     }*/
      row.appendChild(cell);
      tbody.appendChild(row);
     }
@@ -305,6 +318,7 @@
      json[i]["nwsLink"] = "https://www.wrh.noaa.gov/mesowest/timeseries.php?sid="+json[i]["Location ID"]+"&num=168&banner=gmap&raw=0&w=325";
      json[i]["mesowestLink"] = "https://mesowest.utah.edu/cgi-bin/droman/meso_base_dyn.cgi?stn="+json[i]["Location ID"];
      json[i]["First Report"] = json[i]["First Report"].split("T")[0];
+     json[i]["Status as of"] = json[i]["Status as of"].split("T")[0];
     }
     createTable(json,table);
 	 }
