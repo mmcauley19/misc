@@ -5,48 +5,64 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <style>
-   table#statusTable, td, th {
+   table#statusTable, table#operTable, td, th {
     border: 2px solid black;
     border-collapse:collapse;
     /*font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;*/
     font-family:"Helvetica Neue", Helvetica, Arial, sans-serif; 
    }
-   table#statusTable thead {
+   table#statusTable thead, table#operTable thead {
     color:navy;
     /*border: 2px solid black; */
     display:table-header-group;
     background-color:#d5deeb;
    }
-   table#statusTable thead th {
+   table#statusTable thead th, table#operTable thead th {
     text-align:left;
+    font-size:17px;
    }
    table#statusTable thead th.sortable {
     cursor: pointer;
    }
-   table#statusTable tbody .operational {
+   table#statusTable tbody, table#operTable tbody {
+    font-size:15px;
+   }
+   table#statusTable tbody .operational, table#operTable tbody .operational {
     background-color:#92F060;
+    font-weight:bold;
    }
    table#statusTable tbody .questionable {
     background-color:#E6F060;
+    font-weight:bold;
    }
    table#statusTable tbody .bad {
     background-color:#F06e60;
+    font-weight:bold;
    }
-   table#statusTable button.more {
-    background-color:lime;
+   table#statusTable .more, table#operTable .more {
+    font-weight:bold;
+    color:blue;
+    text-decoration: underline;
+    padding-left:10px;
+    cursor:pointer;
    }
 
   </style>
  </head>
  <body>
+<p>
+The table below represents rain gauges that we are currently flagging as questionable or bad.  Gauges flagged as bad do not get included in our current daily analysis. </p>
   <div style="float:left;">Click column heading to sort</div>
   <div style="float:right;">MW = mesowest</div>
   <br>
   <table id = "statusTable"></table>
+  <h3>Stations Recently Returned to Operation</h3>
+  <table id = "operTable"></table>
   <script>
    var elmSorted ="Location ID";
    var sortType = "asc";
    var json;
+   var jsonOper;
    var useOperational = false;
    var includeUpdates = true;
    function getSortOrderAsc(prop){
@@ -110,6 +126,17 @@
      return 0;
    }
 
+   function within30Days(dateIn){
+    let today = new Date();
+    let thirtyDaysAgo = new Date().setDate(today.getDate()-30);
+    if(Date.parse(dateIn) < thirtyDaysAgo){
+     console.log("false and date is "+dateIn);
+     return false;
+    }
+    console.log("true and date is "+dateIn);
+    return true;
+   }
+
    function setupSort(json,table,elm){
     if (elmSorted == elm){
      if (sortType == "asc")
@@ -146,7 +173,7 @@
      rows[j].childNodes[3].textContent = json[i]["Location ID"];
      rows[j].childNodes[4].textContent = json[i].Name;
      rows[j].childNodes[5].textContent = json[i].WFO;
-     rows[j].childNodes[6].textContent = json[i].Owner;
+     rows[j].childNodes[6].textContent = json[i].longName;
      rows[j].childNodes[7].querySelectorAll("A")[0].href = json[i].mesowestLink;
      rows[j].childNodes[7].querySelectorAll("A")[0].target = "_blank";
      rows[j].childNodes[7].querySelectorAll("A")[0].textContent = "MW";
@@ -156,7 +183,7 @@
      rows[j].childNodes[8].textContent = json[i].Notes;
      if(includeUpdates){
       if (json[i]["Updates"]){
-       let moreButton = document.createElement("button"); 
+       let moreButton = document.createElement("span"); 
        moreButton.textContent = "More";
        moreButton.className = "more";
        moreButton.addEventListener("click",clickRegisterUpdates(i));
@@ -190,6 +217,39 @@
     console.log("hello! json content is "+updateText);
    }
 
+   function createOperTable(json,table){
+    let header = document.createElement("thead");
+    let row = document.createElement("tr");
+    let cell = document.createElement("th");
+    cell.textContent = "Status";
+    row.appendChild(cell);
+    cell = document.createElement("th");
+    cell.textContent = "Status as of";
+    row.appendChild(cell);
+ //   cell = document.createElement("th");
+//    cell.textContent = "First Report";
+ //   row.appendChild(cell);
+    cell = document.createElement("th");
+    cell.textContent = "ID";
+    row.appendChild(cell);
+    cell = document.createElement("th");
+    cell.textContent = "Name";
+    row.appendChild(cell);
+    cell = document.createElement("th");
+    cell.textContent = "WFO";
+    row.appendChild(cell);
+    cell = document.createElement("th");
+    cell.textContent = "Owner";
+    row.appendChild(cell);
+    cell = document.createElement("th");
+    cell.textContent = "Link to Ob";
+    row.appendChild(cell);
+    header.appendChild(row);
+    table.appendChild(header);
+    let tbody = document.createElement("tbody");
+    table.appendChild(tbody);
+    fillOperTable(json,table);
+   }
    function createTable(json,table){
     let header = document.createElement("thead");
     let row = document.createElement("tr");
@@ -239,7 +299,7 @@
     cell.classList.add("sortable");
     cell.textContent = "\u21C5  Owner";
     cell.addEventListener("click",function(){
-     setupSort(json,table,"Owner");
+     setupSort(json,table,"longName");
     });
     row.appendChild(cell);
     cell = document.createElement("th");
@@ -253,6 +313,42 @@
     let tbody = document.createElement("tbody");
     table.appendChild(tbody);
     fillTable(json,table);
+   }
+
+   function fillOperTable(json,table){
+    let tbody = table.querySelector("tbody");
+    for (let i=0;i<json.length;i++){
+     if(json[i].Status.toLowerCase() == "operational" && within30Days(json[i]["Status as of"])) {
+      let row = document.createElement("tr");
+      let cell = document.createElement("td");
+      cell.textContent = json[i].Status;
+      cell.className = "operational";
+      row.appendChild(cell);
+      cell = document.createElement("td");
+      cell.textContent = json[i]["Status as of"];
+      row.appendChild(cell);
+ //     cell = document.createElement("td");
+  //    cell.textContent = json[i]["First Report"];
+   //   row.appendChild(cell);
+      cell = document.createElement("td");
+      cell.textContent = json[i]["Location ID"];
+      row.appendChild(cell);
+      cell = document.createElement("td");
+      cell.textContent = json[i].Name;
+      row.appendChild(cell);
+      cell = document.createElement("td");
+      cell.textContent = json[i].WFO;
+      row.appendChild(cell);
+      cell = document.createElement("td");
+      cell.textContent = json[i].longName;
+      row.appendChild(cell);
+      cell = document.createElement("td");
+      makeLink(json[i].mesowestLink,cell,"MW");
+      makeLink(json[i].nwsLink,cell,"NWS");
+      row.appendChild(cell);
+      tbody.appendChild(row);
+     }
+    }
    }
 
    function fillTable(json,table){
@@ -284,7 +380,7 @@
      cell.textContent = json[i].WFO;
      row.appendChild(cell);
      cell = document.createElement("td");
-     cell.textContent = json[i].Owner;
+     cell.textContent = json[i].longName;
      row.appendChild(cell);
      cell = document.createElement("td");
      makeLink(json[i].mesowestLink,cell,"MW");
@@ -294,7 +390,7 @@
      cell.textContent = json[i].Notes;
      if(includeUpdates){
       if (json[i]["Updates"]){
-       let moreButton = document.createElement("button"); 
+       let moreButton = document.createElement("span"); 
        moreButton.textContent = "More";
        moreButton.className = "more";
        moreButton.addEventListener("click",clickRegisterUpdates(i));//showUpdate(json[i]["Updates"]));
@@ -314,6 +410,7 @@
 	 if (req.status == 200){
 	  json = JSON.parse(req.responseText);
 	  let table = document.getElementById("statusTable");
+	  let opertable = document.getElementById("operTable");
     for (let i=0;i<json.length;i++){
      json[i]["nwsLink"] = "https://www.wrh.noaa.gov/mesowest/timeseries.php?sid="+json[i]["Location ID"]+"&num=168&banner=gmap&raw=0&w=325";
      json[i]["mesowestLink"] = "https://mesowest.utah.edu/cgi-bin/droman/meso_base_dyn.cgi?stn="+json[i]["Location ID"];
@@ -321,6 +418,7 @@
      json[i]["Status as of"] = json[i]["Status as of"].split("T")[0];
     }
     createTable(json,table);
+    createOperTable(json,operTable);
 	 }
 	  
 	});
